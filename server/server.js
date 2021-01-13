@@ -1,17 +1,21 @@
-require("dotenv").config();
-const express = require("express");
-const db = require("./db");
-const morgan = require("morgan");
+require('dotenv').config();
+const express = require('express');
+const db = require('./db');
+const morgan = require('morgan');
+const cors = require('cors');
+
 const app = express();
+
+app.use(cors());
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 
 // Get all restaurants
-app.get("/api/v1/restaurants", async (req, res) => {
+app.get('/api/v1/restaurants', async (req, res) => {
   try {
-    const results = await db.query("SELECT * FROM restaurants");
+    const results = await db.query('SELECT * FROM restaurants');
     res.status(200).json({
-      status: "success",
+      status: 'success',
       results: results.rows.length,
       data: {
         restaurants: results.rows,
@@ -23,13 +27,13 @@ app.get("/api/v1/restaurants", async (req, res) => {
 });
 
 // Get a single restaurant
-app.get("/api/v1/restaurants/:id", async (req, res) => {
+app.get('/api/v1/restaurants/:id', async (req, res) => {
   try {
-    const results = await db.query("SELECT * FROM restaurants WHERE id = $1", [
+    const results = await db.query('SELECT * FROM restaurants WHERE id = $1', [
       req.params.id,
     ]);
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         restaurant: results.rows[0],
       },
@@ -40,14 +44,14 @@ app.get("/api/v1/restaurants/:id", async (req, res) => {
 });
 
 // Create Restaurant
-app.post("/api/v1/restaurant", async (req, res) => {
+app.post('/api/v1/restaurants', async (req, res) => {
   try {
     const results = await db.query(
-      "INSERT INTO restaurants (name, location, price_range) VALUES ($1, $2, $3) RETURNING *",
+      'INSERT INTO restaurants (name, location, price_range) VALUES ($1, $2, $3) RETURNING *',
       [req.body.name, req.body.location, req.body.price_range]
     );
     res.status(201).json({
-      status: "success",
+      status: 'success',
       data: {
         restaurant: results.rows[0],
       },
@@ -58,14 +62,14 @@ app.post("/api/v1/restaurant", async (req, res) => {
 });
 
 // Update Restaurant
-app.put("/api/v1/restaurants/:id", async (req, res) => {
+app.put('/api/v1/restaurants/:id', async (req, res) => {
   try {
     const results = await db.query(
-      "UPDATE restaurants SET name = $1, location = $2, price_range = $3 WHERE id =$4 RETURNING *",
+      'UPDATE restaurants SET name = $1, location = $2, price_range = $3 WHERE id =$4 RETURNING *',
       [req.body.name, req.body.location, req.body.price_range, req.params.id]
     );
     res.status(200).json({
-      status: "success",
+      status: 'success',
       data: {
         restaurant: results.rows[0],
       },
@@ -76,12 +80,12 @@ app.put("/api/v1/restaurants/:id", async (req, res) => {
 });
 
 // Delete restaurant
-app.delete("/api/v1/restaurants/:id", async (req, res) => {
+app.delete('/api/v1/restaurants/:id', async (req, res) => {
   try {
-    const results = await db.query("DELETE FROM restaurants WHERE id = $1", [
+    const results = await db.query('DELETE FROM restaurants WHERE id = $1', [
       req.params.id,
     ]);
-    res.status(204).json({ status: "success" });
+    res.status(204).json({ status: 'success' });
   } catch (error) {
     console.log(error);
   }
