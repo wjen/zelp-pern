@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Zelp from '../apis/zelp';
 import { useGlobalContext } from '../context/context';
 import { Link, useHistory } from 'react-router-dom';
+import StarRating from '../components/StarRating';
 
 const RestaurantList = (props) => {
   const { restaurants, setRestaurants } = useGlobalContext();
@@ -10,6 +11,7 @@ const RestaurantList = (props) => {
     const fetchRestaurants = async () => {
       try {
         const response = await Zelp.get('/');
+        console.log(response.data.data);
         setRestaurants(response.data.data.restaurants);
       } catch (error) {
         console.log(error);
@@ -18,17 +20,31 @@ const RestaurantList = (props) => {
     fetchRestaurants();
   }, []);
 
-  const handleUpdate = (id) => {
-    history.push(`/restaurants/${id}/update`);
+  const handleRestaurantSelect = (id) => {
+    history.push(`/restaurants/${id}`);
   };
-  const handleDelete = async (id) => {
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
     try {
+      console.log(id);
       const response = await Zelp.delete(`/${id}`);
       console.log(response);
       setRestaurants(restaurants.filter((restaurant) => restaurant.id !== id));
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const renderRating = ({ average_rating, count }) => {
+    if (!count) {
+      return <span className="text-warning">No reviews yet</span>;
+    }
+    return (
+      <>
+        <StarRating rating={average_rating} />
+        <span className="text-warning">({count})</span>
+      </>
+    );
   };
   return (
     <div className="list-group">
@@ -47,14 +63,17 @@ const RestaurantList = (props) => {
           {restaurants &&
             restaurants.map((restaurant) => {
               return (
-                <tr key={restaurant.id}>
+                <tr
+                  onClick={() => handleRestaurantSelect(restaurant.id)}
+                  key={restaurant.id}
+                >
                   <td>{restaurant.name}</td>
                   <td>{restaurant.location}</td>
                   <td>{'$'.repeat(restaurant.price_range)}</td>
-                  <td>reviews</td>
-
+                  <td>{renderRating(restaurant)}</td>
                   <td>
                     <Link
+                      onClick={(e) => e.stopPropagation()}
                       to={`/restaurants/${restaurant.id}/update`}
                       className="btn btn-sm btn-warning"
                     >
@@ -64,7 +83,7 @@ const RestaurantList = (props) => {
                   <td>
                     <button
                       className="btn btn-sm btn-danger"
-                      onClick={() => handleDelete(restaurant.id)}
+                      onClick={(e) => handleDelete(e, restaurant.id)}
                     >
                       Delete
                     </button>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { useGlobalContext } from '../context/context';
 import zelp from '../apis/zelp';
 
 const UpdateRestaurant = () => {
   const { id } = useParams();
+  let history = useHistory();
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [priceRange, setPriceRange] = useState('');
@@ -24,9 +25,24 @@ const UpdateRestaurant = () => {
     fetchSingleRestaurant();
   }, []);
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const updatedRestaurant = await zelp.put(`/${id}`, {
+        name,
+        location,
+        price_range: priceRange,
+      });
+      history.push('/');
+      console.log(updatedRestaurant);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="form-group mb-3">
           <label htmlFor="name">Name</label>
           <input
@@ -49,7 +65,7 @@ const UpdateRestaurant = () => {
             id="location"
           />
         </div>
-        <div className="form-group mb-3">
+        <div className="form-group mb-2">
           <label htmlFor="price_range">Price Range</label>
           <input
             value={priceRange}
@@ -58,9 +74,12 @@ const UpdateRestaurant = () => {
             className="form-control"
             name="price_range"
             id="price_range"
-            // min="1"
-            // max="5"
+            min="1"
+            max="5"
           />
+        </div>
+        <div id="emailHelp" className="form-text mb-3">
+          Price range 1 through 5
         </div>
         <button className="btn btn-primary">Submit</button>
       </form>
